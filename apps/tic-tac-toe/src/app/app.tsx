@@ -1,7 +1,11 @@
 import React from 'react';
+import { Provider } from 'react-redux';
 import { Game } from './components/game';
+import configureStore from './store/configureStore';
 
 import './app.scss';
+
+const store = configureStore();
 
 export function App() {
   /*
@@ -9,7 +13,11 @@ export function App() {
    *
    * Note: The corresponding styles are in the ./app.scss file.
    */
-  return <Game />;
+  return (
+    <Provider store={store}>
+      <Game />
+    </Provider>
+  );
 }
 
 export default App;

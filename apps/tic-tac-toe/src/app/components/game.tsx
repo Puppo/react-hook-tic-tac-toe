@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  getCurrent,
+  getHistory,
+  getWinner,
+  getXIsNext,
+  historyJump,
+  move,
+} from '../store/game';
 import { Board } from './board';
 
 export const Game: React.FC = () => {
-  const [history, setHistory] = useState([
-    { squares: Array<string>(9).fill('') },
-  ]);
-  const [xIsNext, setXIsNext] = useState(true);
-  const [stepNumber, setStepNumber] = useState(0);
-  const current = history[stepNumber].squares;
+  const dispatch = useDispatch();
+  const history = useSelector(getHistory);
+  const current = useSelector(getCurrent);
+  const winner = useSelector(getWinner);
+  const xIsNext = useSelector(getXIsNext);
 
   const moves = history.map((step, move) => {
     const desc = move ? 'Go to move #' + move : 'Go to game start';
@@ -19,55 +27,15 @@ export const Game: React.FC = () => {
   });
 
   const handleClick = (index: number): void => {
-    const newHistory = history.slice(0, stepNumber + 1);
-    const current = newHistory[newHistory.length - 1];
-    const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[index]) {
-      return;
+    if (!winner) {
+      dispatch(move({ index }));
     }
-    squares[index] = xIsNext ? 'X' : 'O';
-    setHistory(
-      newHistory.concat([
-        {
-          squares: squares,
-        },
-      ])
-    );
-    setStepNumber(newHistory.length);
-    setXIsNext(!xIsNext);
   };
 
   const jumpTo = (step: number): void => {
-    setStepNumber(step);
-    setHistory(history.slice(0, step + 1));
-    setXIsNext(step % 2 === 0);
+    dispatch(historyJump({ step }));
   };
 
-  const calculateWinner = (squares: string[]): string => {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (
-        squares[a] &&
-        squares[a] === squares[b] &&
-        squares[a] === squares[c]
-      ) {
-        return squares[a];
-      }
-    }
-    return null;
-  };
-
-  const winner = calculateWinner(current);
   let status: string;
   if (winner) {
     status = 'Winner: ' + winner;
